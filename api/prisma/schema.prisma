@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  standard
+  admin
+}
+
+model User {
+  id          Int        @id @default(autoincrement())
+  name        String
+  email       String     @unique
+  password    String
+  profile_img String?
+  role        String?    @default("standard")
+  createdAt   DateTime   @default(now())
+  comments    Comments[]
+  projects    Project[]
+
+  @@map("users")
+}
+
+model Project {
+  id          Int              @id @default(autoincrement())
+  name        String
+  description String?
+  card_img    String?
+  owner_id    Int
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  comments    Comments[]
+  images      Project_images[]
+  user        User             @relation(fields: [owner_id], references: [id])
+
+  @@map("projects")
+}
+
+model Project_images {
+  id         Int     @id @default(autoincrement())
+  img        String
+  project_id Int
+  project    Project @relation(fields: [project_id], references: [id])
+
+  @@map("project_images")
+}
+
+model Comments {
+  id         Int      @id @default(autoincrement())
+  project_id Int
+  user_id    Int
+  content    String
+  createdAt  DateTime @default(now())
+  project    Project  @relation(fields: [project_id], references: [id])
+  User       User     @relation(fields: [user_id], references: [id])
+
+  @@map("comments")
+}
